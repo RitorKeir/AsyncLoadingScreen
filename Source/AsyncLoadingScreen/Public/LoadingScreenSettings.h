@@ -14,7 +14,10 @@
 #include "Widgets/Layout/SScaleBox.h"
 #include "Styling/SlateBrush.h"
 #include "Framework/Text/TextLayout.h"
+//#include "Blueprint/UserWidget.h"
 #include "LoadingScreenSettings.generated.h"
+
+class UUserWidget;
 
 
 /** 
@@ -48,7 +51,14 @@ enum class EAsyncLoadingScreenLayout : uint8
 	 * Similar to Sidebar layout but Dual Sidebar layout has two vertical borders on both left and right of the screen.
 	 * The Dual Sidebar layout is suitable for storytelling, long paragraphs due to the height of the tip widget.
 	 */
-	 ALSL_DualSidebar UMETA(DisplayName = "Dual Sidebar")
+	 ALSL_DualSidebar UMETA(DisplayName = "Dual Sidebar"),
+
+	/**
+	 * Custom widget from CustomLoadingWidget.
+	 * Parameter Background.ImageStretch is used.
+	 * ONLY use in non-StartupLoadingScreen
+	 */
+	 ALSL_CustomWidget UMETA(DisplayName = "Custom Widget"),
 };
 
 /** Loading Icon Type*/
@@ -60,7 +70,9 @@ enum class ELoadingIconType : uint8
 	/** SCircularThrobber widget */
 	LIT_CircularThrobber UMETA(DisplayName = "Circular Throbber"),
 	/** Animated images */
-	LIT_ImageSequence UMETA(DisplayName = "Image Sequence")
+	LIT_ImageSequence UMETA(DisplayName = "Image Sequence"),
+	/** SExtendedCircularThrobber widget */
+	LIT_ExtCircularThrobber UMETA(DisplayName = "Circular Throbber (extended)"),
 };
 
 /** Loading Widget type */
@@ -444,7 +456,7 @@ struct ASYNCLOADINGSCREEN_API FALoadingScreenSettings
 
 	/** Background widget for the loading screen. Ignore this if you choose "Show Widget Overlay = false" */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Screen Settings")
-	FBackgroundSettings Background;	
+	FBackgroundSettings Background;
 	
 	/** Tip widget for the loading screen. Ignore this if you choose "Show Widget Overlay = false" */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Screen Settings")
@@ -459,6 +471,14 @@ struct ASYNCLOADINGSCREEN_API FALoadingScreenSettings
 	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Screen Settings")
 	EAsyncLoadingScreenLayout Layout = EAsyncLoadingScreenLayout::ALSL_Classic;
+
+	/**
+	* Custom widget layout.
+	* Parameter Background.ImageStretch is used.
+	* ONLY using in non-StartupLoadingScreen
+	*/
+	UPROPERTY(Config, EditAnywhere, Category = "Loading Screen Settings", meta = (ToolTip = "Custom widget layout. Parameter Background.ImageStretch is used. ONLY using in non-StartupLoadingScreen", EditCondition = "Layout == ALSL_CustomWidget"))
+	TSoftClassPtr<UUserWidget> CustomLoadingWidget;
 };
 
 /** Classic Layout settings*/
@@ -683,6 +703,12 @@ public:
 	 */
 	UPROPERTY(Config, EditAnywhere, Category = "General")
 	FALoadingScreenSettings DefaultLoadingScreen;
+
+	/**
+	 * The loading screens manual created by StartLoadingScreen().
+	 */
+	UPROPERTY(Config, EditAnywhere, Category = "General")
+	TMap<FName, FALoadingScreenSettings> CustomLoadingScreens;
 	
 	/**
 	 * Classic Layout settings.

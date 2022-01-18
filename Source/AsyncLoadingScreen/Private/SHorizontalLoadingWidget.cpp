@@ -19,7 +19,7 @@ void SHorizontalLoadingWidget::Construct(const FArguments& InArgs, const FLoadin
 
 	// Root is a Horizontal Box of course
 	TSharedRef<SHorizontalBox> Root = SNew(SHorizontalBox);		
-	
+
 	// Construct Loading Icon Widget
 	ConstructLoadingIcon(Settings);
 
@@ -69,7 +69,8 @@ void SHorizontalLoadingWidget::Construct(const FArguments& InArgs, const FLoadin
 				.ShadowOffset(Settings.Appearance.ShadowOffset)
 				.ShadowColorAndOpacity(Settings.Appearance.ShadowColorAndOpacity)
 				.Justification(Settings.Appearance.Justification)
-				.Text(Settings.LoadingText)				
+				.Text(Settings.LoadingText)
+				.RenderTransform(FSlateRenderTransform(Settings.TransformTranslation))
 			];
 	}
 
@@ -89,7 +90,8 @@ void SHorizontalLoadingWidget::Construct(const FArguments& InArgs, const FLoadin
 				.ShadowOffset(Settings.Appearance.ShadowOffset)
 				.ShadowColorAndOpacity(Settings.Appearance.ShadowColorAndOpacity)
 				.Justification(Settings.Appearance.Justification)
-				.Text(Settings.LoadingText)				
+				.Text(Settings.LoadingText)
+				.RenderTransform(FSlateRenderTransform(Settings.TransformTranslation))
 			];
 
 

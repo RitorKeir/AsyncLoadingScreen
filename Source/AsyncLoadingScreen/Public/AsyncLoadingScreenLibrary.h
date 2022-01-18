@@ -12,6 +12,8 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "AsyncLoadingScreenLibrary.generated.h"
 
+struct FALoadingScreenSettings;
+
 /**
  * Async Loading Screen Function Library
  */
@@ -23,6 +25,7 @@ private:
 	static int32 DisplayBackgroundIndex;
 	static int32 DisplayTipTextIndex;
 	static int32 DisplayMovieIndex;
+
 public:
 	
 	/**
@@ -49,6 +52,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Async Loading Screen")
 	static void SetDisplayMovieIndex(int32 MovieIndex);
 
+	/**
+	* Get loading screen settings by name. Empty name is the ULoadingScreenSettings::StartupLoadingScreen. '__default' is the ULoadingScreenSettings::DefaultLoadingScreen
+	*/
+	static const FALoadingScreenSettings* GetLoadingScreenSettingsByName(const FName& settings_name);
+
+	/**
+	 * Start the loading screen. To use this function, you must enable the "bAllowEngineTick" option.
+	 *
+	 * @param CustomSettingsName Name of settings in the map CustomLoadingScreens.
+	 **/
+	UFUNCTION(BlueprintCallable, Category = "Async Loading Screen")
+	static void StartLoadingScreen(FName custom_settings_name);
+
+	/**
+	* Setup loading screen settings 
+	*/
+	static void SetupLoadingScreen(const FALoadingScreenSettings& loading_settings);
 
 	/**
 	 * Stop the loading screen. To use this function, you must enable the "bAllowEngineTick" option.
@@ -57,6 +77,11 @@ public:
 	 **/
 	UFUNCTION(BlueprintCallable, Category = "Async Loading Screen")
 	static void StopLoadingScreen();
+
+	/**
+	* Shuffle the movies list
+	*/
+	static void ShuffleMovies(TArray<FString>& MoviesList);
 
 	static inline int32 GetDisplayBackgroundIndex() { return DisplayBackgroundIndex; }
 	static inline int32 GetDisplayTipTextIndex() { return DisplayTipTextIndex; }

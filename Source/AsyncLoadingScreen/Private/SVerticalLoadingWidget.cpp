@@ -50,7 +50,8 @@ void SVerticalLoadingWidget::Construct(const FArguments& InArgs, const FLoadingW
 				.ShadowOffset(Settings.Appearance.ShadowOffset)
 				.ShadowColorAndOpacity(Settings.Appearance.ShadowColorAndOpacity)
 				.Justification(Settings.Appearance.Justification)
-				.Text(Settings.LoadingText)				
+				.Text(Settings.LoadingText)
+				.RenderTransform(FSlateRenderTransform(Settings.TransformTranslation))
 			];
 
 		// Add a Spacer in middle
@@ -108,7 +109,8 @@ void SVerticalLoadingWidget::Construct(const FArguments& InArgs, const FLoadingW
 				.ShadowOffset(Settings.Appearance.ShadowOffset)
 				.ShadowColorAndOpacity(Settings.Appearance.ShadowColorAndOpacity)
 				.Justification(Settings.Appearance.Justification)
-				.Text(Settings.LoadingText)				
+				.Text(Settings.LoadingText)
+				.RenderTransform(FSlateRenderTransform(Settings.TransformTranslation))
 			];
 	}
 

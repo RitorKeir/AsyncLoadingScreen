@@ -13,6 +13,7 @@
 #include "Engine/Texture2D.h"
 #include "MoviePlayer.h"
 #include "Widgets/SCompoundWidget.h"
+#include "SExtendedThrobber.h"
 
 int32 SLoadingWidget::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
 {		
@@ -97,6 +98,15 @@ void SLoadingWidget::ConstructLoadingIcon(const FLoadingWidgetSettings& Settings
 	{
 		// Loading Widget is SCircularThrobber
 		LoadingIcon = SNew(SCircularThrobber)
+			.NumPieces(Settings.CircularThrobberSettings.NumberOfPieces)
+			.Period(Settings.CircularThrobberSettings.Period)
+			.Radius(Settings.CircularThrobberSettings.Radius)
+			.PieceImage(&Settings.CircularThrobberSettings.Image);
+	}
+	else if (Settings.LoadingIconType == ELoadingIconType::LIT_ExtCircularThrobber)
+	{
+		// Loading Widget is SExtendedCircularThrobber
+		LoadingIcon = SNew(SExtendedCircularThrobber)
 			.NumPieces(Settings.CircularThrobberSettings.NumberOfPieces)
 			.Period(Settings.CircularThrobberSettings.Period)
 			.Radius(Settings.CircularThrobberSettings.Radius)
