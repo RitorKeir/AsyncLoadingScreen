@@ -12,9 +12,9 @@
 #include "CustomMoviePlayerThreading.h"
 #include "MoviePlayerSettings.h"
 #include "ShaderCompiler.h"
-#include "IHeadMountedDisplay.h"
-#include "IXRTrackingSystem.h"
-#include "IXRLoadingScreen.h"
+//#include "IHeadMountedDisplay.h"
+//#include "IXRTrackingSystem.h"
+//#include "IXRLoadingScreen.h"
 #include "Misc/ConfigCacheIni.h"
 #include "HAL/FileManager.h"
 #include "Widgets/SVirtualWindow.h"
@@ -555,11 +555,12 @@ void FCustomMoviePlayer::WaitForMovieToFinish(bool bAllowEngineTick)
 		LoadingIsDone.Set(1);
 		IsMoviePlaying = false;
 
+		/* Don't use this for Custom movie player
 		IXRLoadingScreen* LoadingScreen;
 		if (GEngine && GEngine->XRSystem.IsValid() && (LoadingScreen = GEngine->XRSystem->GetLoadingScreen()) != nullptr && SyncMechanism == nullptr)
 		{
 			LoadingScreen->ClearSplashes();
-		}
+		}*/
 
 		MovieStreamingIsDone.Set(1);
 

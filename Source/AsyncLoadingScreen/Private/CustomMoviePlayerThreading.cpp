@@ -17,10 +17,10 @@ FThreadSafeCounter FCustomSlateLoadingSynchronizationMechanism::LoadingThreadIns
  * It does not enqueue render commands, because the RHI is not thread safe. Thus, it waits to
  * enqueue render commands until the render thread tickables ticks, and then it calls them there.
  */
-class FSlateLoadingThreadTask : public FRunnable
+class FCustomSlateLoadingThreadTask : public FRunnable
 {
 public:
-	FSlateLoadingThreadTask(class FCustomSlateLoadingSynchronizationMechanism& InSyncMechanism)
+	FCustomSlateLoadingThreadTask(class FCustomSlateLoadingSynchronizationMechanism& InSyncMechanism)
 		: SyncMechanism(&InSyncMechanism)
 	{
 	}
@@ -61,7 +61,7 @@ void FCustomSlateLoadingSynchronizationMechanism::Initialize()
 	FString ThreadName = TEXT("CustomSlateLoadingThread");
 	ThreadName.AppendInt(LoadingThreadInstanceCounter.Increment());
 
-	SlateRunnableTask = new FSlateLoadingThreadTask( *this );
+	SlateRunnableTask = new FCustomSlateLoadingThreadTask( *this );
 	SlateLoadingThread = FRunnableThread::Create(SlateRunnableTask, *ThreadName);
 }
 
@@ -173,7 +173,7 @@ void FCustomSlateLoadingSynchronizationMechanism::SlateThreadRunMainLoop()
 }
 
 
-bool FSlateLoadingThreadTask::Init()
+bool FCustomSlateLoadingThreadTask::Init()
 {
 	// First thing to do is set the slate loading thread ID
 	// This guarantees all systems know that a slate thread exists
@@ -182,7 +182,7 @@ bool FSlateLoadingThreadTask::Init()
 	return true;
 }
 
-uint32 FSlateLoadingThreadTask::Run()
+uint32 FCustomSlateLoadingThreadTask::Run()
 {
 	check( GSlateLoadingThreadId == FPlatformTLS::GetCurrentThreadId() );
 
@@ -194,7 +194,7 @@ uint32 FSlateLoadingThreadTask::Run()
 	return 0;
 }
 
-void FSlateLoadingThreadTask::Stop()
+void FCustomSlateLoadingThreadTask::Stop()
 {
 	SyncMechanism->ResetSlateDrawPassEnqueued();
 	SyncMechanism->ResetSlateMainLoopRunning();
