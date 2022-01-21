@@ -61,14 +61,4 @@ private:
 	 * Loading screen callback, it won't be called if we've already explicitly setup the loading screen
 	 */
 	void PreSetupLoadingScreen();
-
-	/**
-	 * Setup loading screen settings 
-	 */
-	void SetupLoadingScreen(const FALoadingScreenSettings& LoadingScreenSettings);
-
-	/**
-	 * Shuffle the movies list
-	 */
-	void ShuffleMovies(TArray<FString>& MoviesList);
 };

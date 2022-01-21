@@ -9,17 +9,20 @@
 
 #include "AsyncLoadingScreenLibrary.h"
 #include "MoviePlayer.h"
+#include "PreLoadScreen/Public/PreLoadScreenManager.h"
+#include "CustomMoviePlayer.h"
 #include "LoadingScreenSettings.h"
 #include "LoadingScreenWidget.h"
 
-//#if WITH_EDITOR
-//#pragma optimize("", off)
-//#endif
+#if WITH_EDITOR
+#pragma optimize("", off)
+#endif
 
 
 int32 UAsyncLoadingScreenLibrary::DisplayBackgroundIndex = -1;
 int32 UAsyncLoadingScreenLibrary::DisplayTipTextIndex = -1;
 int32 UAsyncLoadingScreenLibrary::DisplayMovieIndex = -1;
+
 
 void UAsyncLoadingScreenLibrary::SetDisplayBackgroundIndex(int32 BackgroundIndex)
 {
@@ -59,15 +62,47 @@ const FALoadingScreenSettings* UAsyncLoadingScreenLibrary::GetLoadingScreenSetti
 	return loading_settings;
 }
 
-void UAsyncLoadingScreenLibrary::StartLoadingScreen(FName custom_settings_name)
+void UAsyncLoadingScreenLibrary::StartCustomLoadingScreen(FName custom_settings_name)
 {
 	const ULoadingScreenSettings* settings{GetDefault<ULoadingScreenSettings>()};
 	const FALoadingScreenSettings* loading_settings{GetLoadingScreenSettingsByName(custom_settings_name)};
 
-	SetupLoadingScreen(*loading_settings);
+	if (FCommandLine::IsInitialized() && IsMoviePlayerEnabled() && !GUsingNullRHI)
+	{
+		if (!FCustomMoviePlayer::Get())
+		{
+			if (FSlateRenderer* renderer{FSlateApplication::Get().GetRenderer()})
+			{
+				IGameMoviePlayer* mp = GetMoviePlayer();
+				FCustomMoviePlayer::Create();
+				FCustomMoviePlayer::Get()->Initialize(*renderer, GEngine->GameViewport->GetWindow());
+			}
+		}
+
+		if (FCustomMoviePlayer::Get())
+		{
+			// Stop system loading screen before custom loading screen
+			// Custom loading screen is higher priority then system loading screen
+			StopLoadingScreen();
+
+			SetupLoadingScreenInternal(FCustomMoviePlayer::Get(), *loading_settings);
+			FCustomMoviePlayer::Get()->PlayMovie();
+		}
+	}
 }
 
 void UAsyncLoadingScreenLibrary::SetupLoadingScreen(const FALoadingScreenSettings& loading_settings)
+{
+	if (FCustomMoviePlayer::Get() && FCustomMoviePlayer::Get()->IsMovieCurrentlyPlaying())
+	{
+		// Custom loading screen is showing, dont' show system loading screen
+		return;
+	}
+
+	SetupLoadingScreenInternal(GetMoviePlayer(), loading_settings);
+}
+
+void UAsyncLoadingScreenLibrary::SetupLoadingScreenInternal(IGameMoviePlayer* movie_player, const FALoadingScreenSettings& loading_settings)
 {
 	if (loading_settings.bShowWidgetOverlay == false && loading_settings.MoviePaths.Num() == 0)
 	{
@@ -112,12 +147,21 @@ void UAsyncLoadingScreenLibrary::SetupLoadingScreen(const FALoadingScreenSetting
 		loading_screen.WidgetLoadingScreen = ULoadingScreenWidget::CreateSlateWidget(loading_settings);
 	}
 
-	GetMoviePlayer()->SetupLoadingScreen(loading_screen);
+	movie_player->SetupLoadingScreen(loading_screen);
 }
 
 void UAsyncLoadingScreenLibrary::StopLoadingScreen()
 {
 	GetMoviePlayer()->StopMovie();
+}
+
+void UAsyncLoadingScreenLibrary::StopCustomLoadingScreen()
+{
+	if (FCustomMoviePlayer::Get())
+	{
+		FCustomMoviePlayer::Get()->StopMovie();
+		FCustomMoviePlayer::Get()->WaitForMovieToFinish(false);
+	}
 }
 
 void UAsyncLoadingScreenLibrary::ShuffleMovies(TArray<FString>& MoviesList)
@@ -137,6 +181,6 @@ void UAsyncLoadingScreenLibrary::ShuffleMovies(TArray<FString>& MoviesList)
 }
 
 
-//#if WITH_EDITOR
-//#pragma optimize("", on)
-//#endif
+#if WITH_EDITOR
+#pragma optimize("", on)
+#endif

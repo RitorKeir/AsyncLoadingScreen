@@ -13,6 +13,7 @@
 #include "AsyncLoadingScreenLibrary.generated.h"
 
 struct FALoadingScreenSettings;
+class IGameMoviePlayer;
 
 /**
  * Async Loading Screen Function Library
@@ -25,6 +26,11 @@ private:
 	static int32 DisplayBackgroundIndex;
 	static int32 DisplayTipTextIndex;
 	static int32 DisplayMovieIndex;
+
+	/**
+	* Setup loading screen settings for MoviePlayer
+	*/
+	static void SetupLoadingScreenInternal(IGameMoviePlayer* movie_player, const FALoadingScreenSettings& loading_settings);
 
 public:
 	
@@ -63,7 +69,7 @@ public:
 	 * @param CustomSettingsName Name of settings in the map CustomLoadingScreens.
 	 **/
 	UFUNCTION(BlueprintCallable, Category = "Async Loading Screen")
-	static void StartLoadingScreen(FName custom_settings_name);
+	static void StartCustomLoadingScreen(FName custom_settings_name);
 
 	/**
 	* Setup loading screen settings 
@@ -77,6 +83,13 @@ public:
 	 **/
 	UFUNCTION(BlueprintCallable, Category = "Async Loading Screen")
 	static void StopLoadingScreen();
+
+	/**
+	* Stop the custom loading screen and wait
+	*
+	**/
+	UFUNCTION(BlueprintCallable, Category = "Async Loading Screen")
+	static void StopCustomLoadingScreen();
 
 	/**
 	* Shuffle the movies list

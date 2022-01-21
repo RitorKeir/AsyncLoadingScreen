@@ -40,6 +40,10 @@ public class AsyncLoadingScreen : ModuleRules
 				"SlateCore",
 				"UMG",
 				"MoviePlayer",
+				"RHI",
+				"RenderCore",
+				"ApplicationCore",
+				"PreLoadScreen",
 				"DeveloperSettings"
 				// ... add private dependencies that you statically link with here ...	
 			}
