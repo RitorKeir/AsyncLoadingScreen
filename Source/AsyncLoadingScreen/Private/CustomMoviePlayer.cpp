@@ -310,25 +310,28 @@ void FCustomMoviePlayer::SetupLoadingScreen(const FLoadingScreenAttributes& InLo
 	}
 	else
 	{
-	    LoadingScreenAttributes = InLoadingScreenAttributes;
-    }
+		LoadingScreenAttributes = InLoadingScreenAttributes;
+	}
 }
 
 bool FCustomMoviePlayer::HasEarlyStartupMovie() const
 {
+/* Don't use this for Custom movie player
 #if PLATFORM_SUPPORTS_EARLY_MOVIE_PLAYBACK
 	return LoadingScreenAttributes.bAllowInEarlyStartup == true;
 #else
 	return false;
-#endif
+#endif*/
+	return false;
 }
 
 bool FCustomMoviePlayer::PlayEarlyStartupMovies()
 {
+	/* Don't use this for Custom movie player
 	if(HasEarlyStartupMovie())
 	{
 		return PlayMovie();
-	}
+	}*/
 
 	return false;
 }
