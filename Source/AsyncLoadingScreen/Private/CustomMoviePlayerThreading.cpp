@@ -147,8 +147,8 @@ void FCustomSlateLoadingSynchronizationMechanism::SlateThreadRunMainLoop()
 				MovieStreamer->TickPostEngine();
 			}
 
-			FSlateRenderer* MainSlateRenderer = FSlateApplication::Get().GetRenderer();
-			FScopeLock ScopeLock(MainSlateRenderer->GetResourceCriticalSection());
+			//FSlateRenderer* MainSlateRenderer = FSlateApplication::Get().GetRenderer();
+			//FScopeLock ScopeLock(MainSlateRenderer->GetResourceCriticalSection());
 
 			WidgetRenderer->DrawWindow(DeltaTime);
 

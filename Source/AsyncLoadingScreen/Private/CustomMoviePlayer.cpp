@@ -876,6 +876,7 @@ void FCustomMoviePlayerWidgetRenderer::DrawWindow(float DeltaTime)
 		return;
 	}
 
+	/* Don't use this for Custom movie player
 	const float Scale = FSlateApplication::Get().GetApplicationScale() * MainWindow->GetDPIScaleFactor();
 	FVector2D DrawSize = VirtualRenderWindow->GetClientSizeInScreen() / Scale;
 
@@ -885,15 +886,14 @@ void FCustomMoviePlayerWidgetRenderer::DrawWindow(float DeltaTime)
 
 	VirtualRenderWindow->SlatePrepass(WindowGeometry.Scale);
 
-	/* Don't use this for Custom movie player
 	FSlateRect ClipRect = WindowGeometry.GetLayoutBoundingRect();
 
 	HittestGrid->SetHittestArea(VirtualRenderWindow->GetPositionInScreen(), VirtualRenderWindow->GetViewportSize());
-	HittestGrid->Clear();*/
+	HittestGrid->Clear();
 
 	// Get the free buffer & add our virtual window
 	FSlateDrawBuffer& DrawBuffer = SlateRenderer->GetDrawBuffer();
-	/* Don't use this for Custom movie player
+
 	FSlateWindowElementList& WindowElementList = DrawBuffer.AddWindowElementList(VirtualRenderWindow);
 
 	WindowElementList.SetRenderTargetWindow(MainWindow);
@@ -911,7 +911,13 @@ void FCustomMoviePlayerWidgetRenderer::DrawWindow(float DeltaTime)
 			FWidgetStyle(),
 			VirtualRenderWindow->IsEnabled());
 	}
-	*/
+
+	SlateRenderer->DrawWindows(DrawBuffer);*/
+
+	FSlateApplication::Get().Tick(ESlateTickType::Time);
+
+	FScopeLock ScopeLock(SlateRenderer->GetResourceCriticalSection());
+	FSlateDrawBuffer& DrawBuffer = SlateRenderer->GetDrawBuffer();
 	SlateRenderer->DrawWindows(DrawBuffer);
 
 	DrawBuffer.ViewOffset = FVector2D::ZeroVector;
