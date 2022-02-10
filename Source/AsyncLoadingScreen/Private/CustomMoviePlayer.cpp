@@ -22,6 +22,7 @@
 #include "HAL/PlatformApplicationMisc.h"
 #include "Widgets/Layout/SDPIScaler.h"
 #include "Engine/UserInterfaceSettings.h"
+#include "Framework/Application/SlateUser.h"
 
 //#if WITH_EDITOR
 //#pragma optimize("", off)
