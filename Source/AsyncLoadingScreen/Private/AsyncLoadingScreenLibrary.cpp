@@ -64,16 +64,19 @@ const FALoadingScreenSettings* UAsyncLoadingScreenLibrary::GetLoadingScreenSetti
 
 void UAsyncLoadingScreenLibrary::StartCustomLoadingScreen(FName custom_settings_name)
 {
-	const ULoadingScreenSettings* settings{GetDefault<ULoadingScreenSettings>()};
-	const FALoadingScreenSettings* loading_settings{GetLoadingScreenSettingsByName(custom_settings_name)};
-
+#if WITH_EDITOR
+	if (FCommandLine::IsInitialized() && GUseThreadedRendering && !GUsingNullRHI)
+#else
 	if (FCommandLine::IsInitialized() && IsMoviePlayerEnabled() && !GUsingNullRHI)
+#endif
 	{
+		const ULoadingScreenSettings* settings{GetDefault<ULoadingScreenSettings>()};
+		const FALoadingScreenSettings* loading_settings{GetLoadingScreenSettingsByName(custom_settings_name)};
+
 		if (!FCustomMoviePlayer::Get())
 		{
 			if (FSlateRenderer* renderer{FSlateApplication::Get().GetRenderer()})
 			{
-				IGameMoviePlayer* mp = GetMoviePlayer();
 				FCustomMoviePlayer::Create();
 				FCustomMoviePlayer::Get()->Initialize(*renderer, GEngine->GameViewport->GetWindow());
 			}
@@ -81,6 +84,11 @@ void UAsyncLoadingScreenLibrary::StartCustomLoadingScreen(FName custom_settings_
 
 		if (FCustomMoviePlayer::Get())
 		{
+			if (FSlateRenderer* renderer{FSlateApplication::Get().GetRenderer()})
+			{
+				FCustomMoviePlayer::Get()->Initialize(*renderer, GEngine->GameViewport->GetWindow());
+			}
+
 			// Stop system loading screen before custom loading screen
 			// Custom loading screen is higher priority then system loading screen
 			StopLoadingScreen();
@@ -159,8 +167,8 @@ void UAsyncLoadingScreenLibrary::StopCustomLoadingScreen()
 {
 	if (FCustomMoviePlayer::Get())
 	{
-		FCustomMoviePlayer::Get()->StopMovie();
-		FCustomMoviePlayer::Get()->WaitForMovieToFinish(false);
+		// Destroy custom loading screen to evade extra using CPU in FCustomMoviePlayer::TickStreamer()
+		FCustomMoviePlayer::Destroy();
 	}
 }
 

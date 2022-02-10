@@ -23,6 +23,10 @@
 #include "Widgets/Layout/SDPIScaler.h"
 #include "Engine/UserInterfaceSettings.h"
 
+//#if WITH_EDITOR
+//#pragma optimize("", off)
+//#endif
+
 DEFINE_LOG_CATEGORY_STATIC(LogMoviePlayer, Log, All);
 
 class SDefaultMovieBorder : public SBorder
@@ -255,7 +259,7 @@ void FCustomMoviePlayer::Shutdown()
 	}
 
 	StopMovie();
-	WaitForMovieToFinish();
+	//WaitForMovieToFinish();
 
 	FCustomMoviePlayer* InMoviePlayer = this;
 	ENQUEUE_RENDER_COMMAND(UnregisterMoviePlayerTickable)(
@@ -280,7 +284,7 @@ void FCustomMoviePlayer::Shutdown()
 
 	LoadingScreenAttributes = FLoadingScreenAttributes();
 
-	if( SyncMechanism )
+	if (SyncMechanism)
 	{
 		SyncMechanism->DestroySlateThread();
 		FScopeLock SyncMechanismLock(&SyncMechanismCriticalSection);
@@ -419,6 +423,8 @@ void FCustomMoviePlayer::StopMovie()
 {
 	LastPlayTime = 0;
 	bUserCalledFinish = true;
+
+	WaitForMovieToFinish(false);
 }
 
 void FCustomMoviePlayer::WaitForMovieToFinish(bool bAllowEngineTick)
@@ -436,16 +442,18 @@ void FCustomMoviePlayer::WaitForMovieToFinish(bool bAllowEngineTick)
 			delete SyncMechanism;
 			SyncMechanism = nullptr;
 		}
+
 		if( !bEnforceMinimumTime )
 		{
 			LoadingIsDone.Set(1);
 		}
 		
-		if (MainWindow.IsValid())
+		/*if (MainWindow.IsValid())
 		{
 			// Transfer the content to the main window
 			MainWindow.Pin()->SetContent(LoadingScreenContents.ToSharedRef());
-		}
+		}*/
+
 		if (VirtualRenderWindow.IsValid())
 		{
 			VirtualRenderWindow->SetContent(SNullWidget::NullWidget);
@@ -593,7 +601,6 @@ void FCustomMoviePlayer::WaitForMovieToFinish(bool bAllowEngineTick)
 			GameEngine->SwitchGameWindowToUseGameViewport();
 		}
 	}
-
 }
 
 bool FCustomMoviePlayer::IsLoadingFinished() const
@@ -863,8 +870,7 @@ FCustomMoviePlayerWidgetRenderer::FCustomMoviePlayerWidgetRenderer(TSharedPtr<SW
 	, VirtualRenderWindow(InVirtualRenderWindow.ToSharedRef())
 	, SlateRenderer(InRenderer)
 {
-	/* Don't use this for Custom movie player
-	HittestGrid = MakeShareable(new FHittestGrid);*/
+	HittestGrid = MakeShareable(new FHittestGrid);
 }
 
 void FCustomMoviePlayerWidgetRenderer::DrawWindow(float DeltaTime)
@@ -876,13 +882,9 @@ void FCustomMoviePlayerWidgetRenderer::DrawWindow(float DeltaTime)
 		return;
 	}
 
-	/* Don't use this for Custom movie player
-	const float Scale = FSlateApplication::Get().GetApplicationScale() * MainWindow->GetDPIScaleFactor();
-	FVector2D DrawSize = VirtualRenderWindow->GetClientSizeInScreen() / Scale;
-
 	FSlateApplication::Get().Tick(ESlateTickType::Time);
 
-	FGeometry WindowGeometry = FGeometry::MakeRoot(DrawSize, FSlateLayoutTransform(Scale));
+	FGeometry WindowGeometry = VirtualRenderWindow->GetPaintSpaceGeometry();
 
 	VirtualRenderWindow->SlatePrepass(WindowGeometry.Scale);
 
@@ -890,6 +892,8 @@ void FCustomMoviePlayerWidgetRenderer::DrawWindow(float DeltaTime)
 
 	HittestGrid->SetHittestArea(VirtualRenderWindow->GetPositionInScreen(), VirtualRenderWindow->GetViewportSize());
 	HittestGrid->Clear();
+
+	FScopeLock ScopeLock(SlateRenderer->GetResourceCriticalSection());
 
 	// Get the free buffer & add our virtual window
 	FSlateDrawBuffer& DrawBuffer = SlateRenderer->GetDrawBuffer();
@@ -912,12 +916,35 @@ void FCustomMoviePlayerWidgetRenderer::DrawWindow(float DeltaTime)
 			VirtualRenderWindow->IsEnabled());
 	}
 
-	SlateRenderer->DrawWindows(DrawBuffer);*/
+	if (GEngine->GameViewport->GetIsUsingSoftwareCursorWidgets())
+	{
+		if (TSharedPtr<SWidget> cursor_widget{GEngine->GameViewport->GetSoftwareCursorWidget(EMouseCursor::Default)})
+		{
+			// Draw Software Cursors
+			FSlateApplication::Get().ForEachUser([&cursor_widget, this, &WindowElementList, &MaxLayerId](FSlateUser& User) {
+					// Copied from FSlateUser::DrawCursor()
+					FSlateApplication& SlateApp = FSlateApplication::Get();
+					const float WindowRootScale = FSlateApplication::Get().GetApplicationScale() * MainWindow->GetNativeWindow()->GetDPIScaleFactor();
 
-	FSlateApplication::Get().Tick(ESlateTickType::Time);
+					cursor_widget->SetVisibility(EVisibility::HitTestInvisible);
+					cursor_widget->SlatePrepass(WindowRootScale);
 
-	FScopeLock ScopeLock(SlateRenderer->GetResourceCriticalSection());
-	FSlateDrawBuffer& DrawBuffer = SlateRenderer->GetDrawBuffer();
+					FVector2D CursorInScreen = User.GetCursorPosition();
+					FVector2D CursorPosInWindowSpace = MainWindow->GetWindowGeometryInScreen().AbsoluteToLocal(CursorInScreen) * WindowRootScale;
+					CursorPosInWindowSpace += (cursor_widget->GetDesiredSize() * -0.5);
+					const FGeometry CursorGeometry = FGeometry::MakeRoot(cursor_widget->GetDesiredSize(), FSlateLayoutTransform(CursorPosInWindowSpace));
+
+					cursor_widget->Paint(
+						FPaintArgs(MainWindow, MainWindow->GetHittestGrid(), MainWindow->GetPositionInScreen(), SlateApp.GetCurrentTime(), SlateApp.GetDeltaTime()),
+						CursorGeometry, MainWindow->GetClippingRectangleInWindow(),
+						WindowElementList,
+						++MaxLayerId,
+						FWidgetStyle(),
+						MainWindow->IsEnabled());
+				});
+		}
+	}
+
 	SlateRenderer->DrawWindows(DrawBuffer);
 
 	DrawBuffer.ViewOffset = FVector2D::ZeroVector;
@@ -954,3 +981,7 @@ void FCustomMoviePlayer::Resume()
 	}
 }
 
+
+//#if WITH_EDITOR
+//#pragma optimize("", on)
+//#endif

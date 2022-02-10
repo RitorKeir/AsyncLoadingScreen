@@ -33,8 +33,7 @@ private:
 	/** Virtual window that we render to instead of the main slate window (for thread safety).  Shares only the same backbuffer as the main window */
 	TSharedRef<class SVirtualWindow> VirtualRenderWindow;
 
-	/* Don't use this for Custom movie player
-	TSharedPtr<FHittestGrid> HittestGrid;*/
+	TSharedPtr<FHittestGrid> HittestGrid;
 
 	FSlateRenderer* SlateRenderer;
 
