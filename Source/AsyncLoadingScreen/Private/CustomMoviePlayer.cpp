@@ -196,7 +196,8 @@ void FCustomMoviePlayer::Initialize(FSlateRenderer& InSlateRenderer, TSharedPtr<
 
 	VirtualRenderWindow =
 		SNew(SVirtualWindow)
-		.Size(GameWindow->GetClientSizeInScreen());
+		.Size(GameWindow->GetClientSizeInScreen())
+		.Visibility(EVisibility::HitTestInvisible);
 
 	WidgetRenderer = MakeShared<FCustomMoviePlayerWidgetRenderer, ESPMode::ThreadSafe>(GameWindow, VirtualRenderWindow, &InSlateRenderer);
 
@@ -469,10 +470,10 @@ void FCustomMoviePlayer::WaitForMovieToFinish(bool bAllowEngineTick)
 		FSlateApplication& SlateApp = FSlateApplication::Get();
 
 		// Make sure the movie player widget has user focus to accept keypresses
-		if (LoadingScreenContents.IsValid())
+		/*if (LoadingScreenContents.IsValid())
 		{
 			SlateApp.SetAllUserFocus(LoadingScreenContents);
-		}
+		}*/
 
 		// Continue to wait until the user calls finish (if enabled) or when loading completes or the minimum enforced time (if any) has been reached.
 		// Don't continue playing on game shutdown
